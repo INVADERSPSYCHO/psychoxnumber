@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PSYCHOPATHMC • Number Intel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #ff2d55; border-radius: 10px; }
+
+        /* Disclaimer */
+        .disclaimer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s, visibility 0.6s;
+        }
+        .disclaimer-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .disclaimer-box {
+            background: linear-gradient(145deg, #111118, #1a1a2a);
+            border: 2px solid rgba(255,45,85,0.3);
+            border-radius: 28px;
+            padding: 45px 40px;
+            max-width: 500px;
+            width: 92%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(255,45,85,0.1);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9) translateY(30px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .disclaimer-box .icon-big { font-size: 56px; display: block; margin-bottom: 10px; }
+        .disclaimer-box .brand { color: #ff2d55; font-weight: 800; letter-spacing: 2px; font-size: 14px; }
+        .disclaimer-box h2 { font-size: 26px; font-weight: 800; margin: 8px 0 12px; color: #fff; }
+        .disclaimer-box .divider { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, #ff2d55, transparent); margin: 12px auto; border-radius: 10px; }
+        .disclaimer-box .content { color: #aaa; font-size: 14px; line-height: 1.8; margin-bottom: 22px; }
+        .disclaimer-box .content strong { color: #ff2d55; }
+        .disclaimer-box .btn-accept {
+            padding: 14px 48px;
+            background: linear-gradient(135deg, #ff2d55, #ff4d7a);
+            border: none;
+            border-radius: 60px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        .disclaimer-box .btn-accept:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(255,45,85,0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 620px;
+            width: 100%;
+            background: rgba(20,20,30,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 40px 32px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(255,45,85,0.03), transparent 60%);
+            pointer-events: none;
+        }
+        .brand-header {
+            text-align: center;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+        }
+        .brand-header .logo {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #ff2d55, #ff6b8a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .brand-header .sub {
+            font-size: 11px;
+            color: #555;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .brand-header .status {
+            display: inline-block;
+            background: rgba(0,255,100,0.08);
+            border: 1px solid rgba(0,255,100,0.15);
+            padding: 3px 14px;
+            border-radius: 30px;
+            font-size: 10px;
+            color: #4ade80;
+            margin-top: 6px;
+        }
+
+        .search-box {
+            display: flex;
+            background: rgba(255,255,255,0.04);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 4px;
+            transition: 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        .search-box:focus-within {
+            border-color: #ff2d55;
+            box-shadow: 0 0 30px rgba(255,45,85,0.05);
+        }
+        .search-box .country {
+            padding: 14px 16px;
+            color: #888;
+            font-weight: 600;
+            font-size: 15px;
+            background: rgba(255,255,255,0.02);
+            border-right: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px 0 0 12px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 14px 18px;
+            background: transparent;
+            border: none;
+            color: #eee;
+            font-size: 17px;
+            font-weight: 500;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+        }
+        .search-box input::placeholder {
+            color: #555;
+            font-weight: 400;
+            font-size: 14px;
+        }
+        .search-box button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #ff2d55, #ff4d7a);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-box button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(255,45,85,0.25);
+        }
+        .search-box button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+        .status-bar .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.2; transform: scale(0.5); }
+        }
+        .error-text {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+        .error-text.show { display: block; }
+
+        /* Results */
+        .result-box {
+            margin-top: 28px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            padding-top: 24px;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+        .result-box.show { display: block; animation: slideUp 0.5s ease; }
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .result-header .title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .result-header .count {
+            background: rgba(255,255,255,0.04);
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+        .record {
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: 0.3s;
+        }
+        .record:hover { border-color: rgba(255,45,85,0.15); }
+        .record .field {
+            display: flex;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .record .field:last-child { border-bottom: none; }
+        .record .field .label {
+            color: #777;
+            width: 110px;
+            flex-shrink: 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .record .field .label i { color: #ff2d55; width: 16px; font-size: 13px; }
+        .record .field .value {
+            color: #eee;
+            font-weight: 500;
+            text-align: right;
+            flex: 1;
+            word-break: break-word;
+        }
+        .record .field .value.highlight { color: #ff6b8a; }
+        .record .field .value.green { color: #4ade80; }
+        .record .field .value.cyan { color: #22d3ee; }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #444;
+            letter-spacing: 1px;
+            border-top: 1px solid rgba(255,255,255,0.03);
+            padding-top: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        .footer span { color: #ff2d55; }
+        .footer .social a {
+            color: #555;
+            margin: 0 10px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        .footer .social a:hover { color: #ff2d55; }
+
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; }
+            .search-box { flex-wrap: wrap; }
+            .search-box .country { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); border-radius: 12px 12px 0 0; }
+            .search-box button { width: 100%; border-radius: 12px; justify-content: center; }
+            .record .field { flex-wrap: wrap; }
+            .record .field .label { width: 100%; }
+            .record .field .value { width: 100%; text-align: left; margin-top: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== DISCLAIMER ===== -->
+<div class="disclaimer-overlay" id="disclaimerOverlay">
+    <div class="disclaimer-box">
+        <span class="icon-big">🛡️</span>
+        <div class="brand">PSYCHOPATHMC</div>
+        <h2>DISCLAIMER</h2>
+        <div class="divider"></div>
+        <div class="content">
+            This tool is for <strong>educational and security awareness</strong> only.<br>
+            Data is from <strong>publicly available sources</strong>.<br><br>
+            <i class="fas fa-link" style="color:#ff2d55;"></i> Use responsibly &amp; ethically.
+        </div>
+        <button class="btn-accept" onclick="acceptDisclaimer()">
+            <i class="fas fa-check-circle"></i> I UNDERSTAND
+        </button>
+    </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="container">
+
+    <div class="brand-header">
+        <div class="logo">✦ PSYCHOPATHMC</div>
+        <div class="sub">Cyber Intel Division</div>
+        <div class="status"><i class="fas fa-shield-alt"></i> System Active</div>
+    </div>
+
+    <div class="search-box">
+        <span class="country">+91</span>
+        <input type="tel" id="phoneInput" placeholder="Enter 10-digit number" maxlength="10" inputmode="numeric" value="">
+        <button id="trackBtn"><i class="fas fa-search"></i> TRACE</button>
+    </div>
+
+    <div class="status-bar">
+        <span class="dot"></span>
+        <span id="statusText">Ready</span>
+    </div>
+
+    <div class="error-text" id="errorText">❌ Error message</div>
+
+    <div class="result-box" id="resultBox">
+        <div class="result-header">
+            <div class="title"><i class="fas fa-file-alt"></i> Citizen Info</div>
+            <div class="count"><i class="fas fa-database"></i> <span id="recordCount">0</span> Records</div>
+        </div>
+        <div id="resultContent"></div>
+    </div>
+
+    <div class="footer">
+        <div class="social">
+            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-discord"></i></a>
+        </div>
+        <div style="margin-top: 8px;">&copy; 2026 <span>PsychopathMC</span> — Built with <i class="fas fa-heart" style="color:#ff2d55;font-size:10px;"></i></div>
+    </div>
+
+</div>
+
+<script>
+// ============================================================
+//  CONFIGURATION - Change this to your deployed FastAPI URL
+// ============================================================
+const API_URL = 'https://your-fastapi-app.vercel.app/lookup';  // <--- UPDATE THIS
+
+// ============================================================
+//  DISCLAIMER
+// ============================================================
+(function() {
+    if (sessionStorage.getItem('disclaimerShown') === 'true') {
+        document.getElementById('disclaimerOverlay').classList.add('hidden');
+    }
+})();
+
+function acceptDisclaimer() {
+    sessionStorage.setItem('disclaimerShown', 'true');
+    document.getElementById('disclaimerOverlay').classList.add('hidden');
+}
+
+// ============================================================
+//  SEARCH FUNCTION
+// ============================================================
+async function searchNumber() {
+    const input = document.getElementById('phoneInput');
+    const number = input.value.trim();
+    const statusText = document.getElementById('statusText');
+    const trackBtn = document.getElementById('trackBtn');
+    const errorText = document.getElementById('errorText');
+    const resultBox = document.getElementById('resultBox');
+    const resultContent = document.getElementById('resultContent');
+    const recordCount = document.getElementById('recordCount');
+
+    // Validate
+    if (!number || number.length !== 10 || !/^\d{10}$/.test(number)) {
+        errorText.textContent = '⚠️ Please enter a valid 10-digit number.';
+        errorText.classList.add('show');
+        return;
+    }
+    errorText.classList.remove('show');
+
+    // UI Loading
+    trackBtn.disabled = true;
+    trackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SEARCHING';
+    statusText.textContent = '🔍 Fetching data...';
+    resultBox.classList.remove('show');
+
+    try {
+        // Call FastAPI endpoint
+        const response = await fetch(`${API_URL}?number=${number}`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Handle response
+        if (data.status === 'success') {
+            // Combine main and alt records
+            const mainRecords = data.main || [];
+            const altRecords = data.alt || [];
+            const allRecords = [...mainRecords, ...altRecords];
+
+            if (allRecords.length === 0) {
+                resultBox.classList.remove('show');
+                errorText.textContent = '❌ No data found for this number.';
+                errorText.classList.add('show');
+                statusText.textContent = '❌ No records';
+                return;
+            }
+
+            // Display
+            recordCount.textContent = allRecords.length;
+            let html = '';
+            allRecords.forEach((record, idx) => {
+                html += `<div class="record"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="color:#ff2d55;font-size:11px;font-weight:700;letter-spacing:1px;">RECORD ${idx+1}</span></div>`;
+                for (const [key, value] of Object.entries(record)) {
+                    if (value === null || value === undefined || value === '') continue;
+                    // Map keys to friendly labels and icons
+                    let label = key.toUpperCase();
+                    let icon = 'fa-circle';
+                    if (key === 'mobile') { label = 'Phone'; icon = 'fa-phone'; }
+                    else if (key === 'alt') { label = 'Alternate'; icon = 'fa-phone-plus'; }
+                    else if (key === 'name') { label = 'Name'; icon = 'fa-user'; }
+                    else if (key === 'fname') { label = 'Father'; icon = 'fa-user-tie'; }
+                    else if (key === 'aadhar') { label = 'Aadhaar'; icon = 'fa-id-card'; }
+                    else if (key === 'address') { label = 'Address'; icon = 'fa-map-pin'; }
+                    else if (key === 'circle') { label = 'Circle'; icon = 'fa-signal'; }
+                    else if (key === 'email') { label = 'Email'; icon = 'fa-envelope'; }
+                    // Add more as needed
+
+                    let valueClass = 'value';
+                    if (['mobile','alt','aadhar'].includes(key)) valueClass += ' highlight';
+                    else if (key === 'name') valueClass += ' green';
+                    else if (key === 'circle') valueClass += ' cyan';
+
+                    html += `<div class="field"><span class="label"><i class="fas ${icon}"></i> ${label}</span><span class="${valueClass}">${value}</span></div>`;
+                }
+                html += `</div>`;
+            });
+            resultContent.innerHTML = html;
+            resultBox.classList.add('show');
+            errorText.classList.remove('show');
+            statusText.textContent = `✅ Found ${allRecords.length} records`;
+        } else if (data.status === 'not_found') {
+            resultBox.classList.remove('show');
+            errorText.textContent = `❌ No data found for ${number}`;
+            errorText.classList.add('show');
+            statusText.textContent = '❌ Not found';
+        } else {
+            throw new Error(data.message || 'Unknown error');
+        }
+    } catch (err) {
+        statusText.textContent = '❌ Error';
+        errorText.textContent = `⚠️ ${err.message}`;
+        errorText.classList.add('show');
+        resultBox.classList.remove('show');
+    }
+
+    trackBtn.disabled = false;
+    trackBtn.innerHTML = '<i class="fas fa-search"></i> TRACE';
+}
+
+// ============================================================
+//  EVENT BINDING
+// ============================================================
+document.getElementById('trackBtn').addEventListener('click', searchNumber);
+document.getElementById('phoneInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') searchNumber();
+});
+document.getElementById('phoneInput').addEventListener('input', function(e) {
+  
