@@ -26,7 +26,7 @@
         ::-webkit-scrollbar-track { background: #0a0a0f; }
         ::-webkit-scrollbar-thumb { background: #ff2d55; border-radius: 10px; }
 
-        /* Disclaimer */
+        /* ---------- DISCLAIMER ---------- */
         .disclaimer-overlay {
             position: fixed;
             inset: 0;
@@ -81,7 +81,7 @@
             box-shadow: 0 12px 40px rgba(255,45,85,0.3);
         }
 
-        /* Main Container */
+        /* ---------- MAIN CONTAINER ---------- */
         .container {
             max-width: 620px;
             width: 100%;
@@ -137,6 +137,7 @@
             margin-top: 6px;
         }
 
+        /* ---------- SEARCH BOX ---------- */
         .search-box {
             display: flex;
             background: rgba(255,255,255,0.04);
@@ -232,7 +233,7 @@
         }
         .error-text.show { display: block; }
 
-        /* Results */
+        /* ---------- RESULTS ---------- */
         .result-box {
             margin-top: 28px;
             border-top: 1px solid rgba(255,255,255,0.04);
@@ -339,7 +340,7 @@
 </head>
 <body>
 
-<!-- ===== DISCLAIMER ===== -->
+<!-- ===== DISCLAIMER (FIXED) ===== -->
 <div class="disclaimer-overlay" id="disclaimerOverlay">
     <div class="disclaimer-box">
         <span class="icon-big">🛡️</span>
@@ -351,7 +352,7 @@
             Data is from <strong>publicly available sources</strong>.<br><br>
             <i class="fas fa-link" style="color:#ff2d55;"></i> Use responsibly &amp; ethically.
         </div>
-        <button class="btn-accept" onclick="acceptDisclaimer()">
+        <button class="btn-accept" id="acceptBtn">
             <i class="fas fa-check-circle"></i> I UNDERSTAND
         </button>
     </div>
@@ -400,21 +401,34 @@
 
 <script>
 // ============================================================
-//  CONFIGURATION - Change this to your deployed FastAPI URL
+//  CONFIGURATION - Backend API endpoint (Vercel serverless)
 // ============================================================
-const API_URL = 'https://your-fastapi-app.vercel.app/lookup';  // <--- UPDATE THIS
+const API_URL = '/lookup';   // Vercel routing handles this
 
 // ============================================================
-//  DISCLAIMER
+//  DISCLAIMER - FIXED (works on click)
 // ============================================================
 (function() {
-    if (sessionStorage.getItem('disclaimerShown') === 'true') {
+    // If user already accepted this session
+    if (sessionStorage.getItem('disclaimerAccepted') === 'true') {
         document.getElementById('disclaimerOverlay').classList.add('hidden');
     }
 })();
 
+// Wait for DOM to load, then attach click event
+document.addEventListener('DOMContentLoaded', function() {
+    const acceptBtn = document.getElementById('acceptBtn');
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function() {
+            sessionStorage.setItem('disclaimerAccepted', 'true');
+            document.getElementById('disclaimerOverlay').classList.add('hidden');
+        });
+    }
+});
+
+// Fallback: also allow old onclick if someone calls it manually
 function acceptDisclaimer() {
-    sessionStorage.setItem('disclaimerShown', 'true');
+    sessionStorage.setItem('disclaimerAccepted', 'true');
     document.getElementById('disclaimerOverlay').classList.add('hidden');
 }
 
@@ -439,14 +453,13 @@ async function searchNumber() {
     }
     errorText.classList.remove('show');
 
-    // UI Loading
+    // UI loading state
     trackBtn.disabled = true;
     trackBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SEARCHING';
     statusText.textContent = '🔍 Fetching data...';
     resultBox.classList.remove('show');
 
     try {
-        // Call FastAPI endpoint
         const response = await fetch(`${API_URL}?number=${number}`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
@@ -461,7 +474,6 @@ async function searchNumber() {
 
         // Handle response
         if (data.status === 'success') {
-            // Combine main and alt records
             const mainRecords = data.main || [];
             const altRecords = data.alt || [];
             const allRecords = [...mainRecords, ...altRecords];
@@ -474,14 +486,16 @@ async function searchNumber() {
                 return;
             }
 
-            // Display
+            // Display records
             recordCount.textContent = allRecords.length;
             let html = '';
             allRecords.forEach((record, idx) => {
-                html += `<div class="record"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="color:#ff2d55;font-size:11px;font-weight:700;letter-spacing:1px;">RECORD ${idx+1}</span></div>`;
+                html += `<div class="record">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                        <span style="color:#ff2d55;font-size:11px;font-weight:700;letter-spacing:1px;">RECORD ${idx+1}</span>
+                    </div>`;
                 for (const [key, value] of Object.entries(record)) {
                     if (value === null || value === undefined || value === '') continue;
-                    // Map keys to friendly labels and icons
                     let label = key.toUpperCase();
                     let icon = 'fa-circle';
                     if (key === 'mobile') { label = 'Phone'; icon = 'fa-phone'; }
@@ -492,14 +506,16 @@ async function searchNumber() {
                     else if (key === 'address') { label = 'Address'; icon = 'fa-map-pin'; }
                     else if (key === 'circle') { label = 'Circle'; icon = 'fa-signal'; }
                     else if (key === 'email') { label = 'Email'; icon = 'fa-envelope'; }
-                    // Add more as needed
 
                     let valueClass = 'value';
                     if (['mobile','alt','aadhar'].includes(key)) valueClass += ' highlight';
                     else if (key === 'name') valueClass += ' green';
                     else if (key === 'circle') valueClass += ' cyan';
 
-                    html += `<div class="field"><span class="label"><i class="fas ${icon}"></i> ${label}</span><span class="${valueClass}">${value}</span></div>`;
+                    html += `<div class="field">
+                        <span class="label"><i class="fas ${icon}"></i> ${label}</span>
+                        <span class="${valueClass}">${value}</span>
+                    </div>`;
                 }
                 html += `</div>`;
             });
@@ -518,20 +534,4 @@ async function searchNumber() {
     } catch (err) {
         statusText.textContent = '❌ Error';
         errorText.textContent = `⚠️ ${err.message}`;
-        errorText.classList.add('show');
-        resultBox.classList.remove('show');
-    }
-
-    trackBtn.disabled = false;
-    trackBtn.innerHTML = '<i class="fas fa-search"></i> TRACE';
-}
-
-// ============================================================
-//  EVENT BINDING
-// ============================================================
-document.getElementById('trackBtn').addEventListener('click', searchNumber);
-document.getElementById('phoneInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') searchNumber();
-});
-document.getElementById('phoneInput').addEventListener('input', function(e) {
-  
+       
