@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-import duckdb
+import requests
+import pyarrow.parquet as pq
+import io
 
 app = FastAPI()
 
@@ -11,9 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-con = duckdb.connect()
-con.execute("INSTALL httpfs;")
-con.execute("LOAD httpfs;")
+BASE_URL = "https://huggingface.co/datasets/CutehackX/hitek-data-bucket/resolve/main"
 
 @app.get("/")
 def root():
@@ -25,34 +25,32 @@ def lookup(number: str = Query(..., min_length=10, max_length=15)):
         return {"status": "error", "message": "Only digits allowed"}
 
     last_digit = number[-1]
-    primary_url = f"https://huggingface.co/datasets/CutehackX/hitek-data-bucket/resolve/main/final_master_shard_{last_digit}.parquet"
-    alt_url = f"https://huggingface.co/datasets/CutehackX/hitek-data-bucket/resolve/main/alt_master_shard_{last_digit}.parquet"
+    main_url = f"{BASE_URL}/final_master_shard_{last_digit}.parquet"
+    alt_url = f"{BASE_URL}/alt_master_shard_{last_digit}.parquet"
 
-    try:
-        query = f"""
-            SELECT *, 'Main' AS _record_type FROM read_parquet('{primary_url}') WHERE mobile = '{number}'
-            UNION ALL
-            SELECT *, 'Alt' AS _record_type FROM read_parquet('{alt_url}') WHERE alt = '{number}'
-        """
-        raw = con.execute(query).df().to_dict(orient="records")
-        
-        main_records = []
-        alt_records = []
-        for row in raw:
-            rtype = row.pop('_record_type')
-            if rtype == 'Main':
-                main_records.append(row)
-            else:
-                alt_records.append(row)
-        
-        if not main_records and not alt_records:
-            return {"status": "not_found", "number": number}
-        
-        return {
-            "status": "success",
-            "number": number,
-            "main": main_records,
-            "alt": alt_records
-        }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    def fetch_filter(url, column):
+        try:
+            resp = requests.get(url, timeout=15)
+            if resp.status_code != 200:
+                return []
+            table = pq.read_table(io.BytesIO(resp.content))
+            df = table.to_pandas()
+            if column not in df.columns:
+                return []
+            return df[df[column] == number].to_dict(orient="records")
+        except Exception as e:
+            print(f"Error: {e}")
+            return []
+
+    main_records = fetch_filter(main_url, "mobile")
+    alt_records = fetch_filter(alt_url, "alt")
+
+    if not main_records and not alt_records:
+        return {"status": "not_found", "number": number}
+
+    return {
+        "status": "success",
+        "number": number,
+        "main": main_records,
+        "alt": alt_records
+    }
